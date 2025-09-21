@@ -57,7 +57,7 @@ export function StartScreen({
         {phase === "intro" && (
           <div className="relative mx-auto max-w-xl px-6 py-10 text-center text-[#fbd3d3] animate-soft-wobble">
             <div className=" leading-tight uppercase text-[#ff2a2a] [text-shadow:0_0_10px_#ff2a2a80,0_0_30px_#ff2a2a50] drop-shadow-[0_0_6px_#ff2a2a80] tracking-[0.02em] text-5xl">
-              <span className="pr-2 animate-blink">►</span> Travel & Learn
+              <span className="pr-2 animate-blink">►</span> Be Native
             </div>
             <div className="mt-3  text-[#ff9d9d] leading-snug opacity-95 text-[22px]">
               Pick a country, walk to places, practice with an AI native.

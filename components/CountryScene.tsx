@@ -56,9 +56,12 @@ function resolvePersonaFor(
 
     // (leaving your usa mapping as-is)
     usa: {
-      sushi: "Japanese Chef",
-      shrine: "Japanese Monk",
-      karaoke: "Japanese Host",
+      yellowstone: "Yellow Stone Guide",
+      washington: "Washington Guide",
+      liberty: "Liberty Guide",
+      grandcanyon: "Grandcanyon Guide",
+      whitehouse: "WhiteHouse Guide",
+      fastfood: "FastFood Guide",
     },
 
     germany: {
@@ -280,7 +283,7 @@ export function CountryScene({ country }: { country: CountryKey }) {
                 className="absolute -top-6 left-1/2 -translate-x-1/2 text-white text-xs"
                 style={{ textShadow: "0 1px 2px rgba(0,0,0,0.8)" }}
               >
-                {h.label}
+                {/* {h.label} */}
               </div>
             </div>
           ))}

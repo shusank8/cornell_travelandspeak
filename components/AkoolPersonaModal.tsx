@@ -1,21 +1,21 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/AkoolPersonaModal.tsx
-'use client';
+"use client";
 
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useAgora } from '@/lib/akool/AgoraProvider';
-import { setAvatarParams, sendMessageToAvatar } from '@/lib/akool/agoraHelper';
-import type { RTCClient } from '@/lib/akool/rtcTypes';
-import type { Persona } from '@/config/akoolPersonas';
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useAgora } from "@/lib/akool/AgoraProvider";
+import { setAvatarParams, sendMessageToAvatar } from "@/lib/akool/agoraHelper";
+import type { RTCClient } from "@/lib/akool/rtcTypes";
+import type { Persona } from "@/config/akoolPersonas";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   persona: Persona & { fallbackAvatarIds?: string[] };
-  openapiHost: string;   // required in live mode
-  openapiToken: string;  // required in live mode
+  openapiHost: string; // required in live mode
+  openapiToken: string; // required in live mode
   sessionMinutes?: number;
 };
 
@@ -26,7 +26,7 @@ type Credentials = {
   agora_uid: number;
 };
 
-const MOCK = process.env.NEXT_PUBLIC_AKOOL_MODE === 'mock';
+const MOCK = process.env.NEXT_PUBLIC_AKOOL_MODE === "mock";
 
 /* -----------------------------
  * Portal wrapper (prevents clipping)
@@ -46,7 +46,12 @@ function PortalFrame({
   useEffect(() => setMounted(true), []);
   if (!open || !mounted) return null;
   return createPortal(
-    <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: z }} aria-modal="true" role="dialog">
+    <div
+      className="fixed inset-0 flex items-center justify-center"
+      style={{ zIndex: z }}
+      aria-modal="true"
+      role="dialog"
+    >
       <div className="absolute inset-0 bg-black/70" onClick={onClose} />
       <div className="relative w-[min(92vw,900px)] max-h-[88vh] overflow-hidden rounded-2xl border border-white/20 bg-neutral-950 shadow-2xl">
         {children}
@@ -86,9 +91,11 @@ function useMockPersona(enabled: boolean, personaName: string) {
     setLog((L) => [...L, `you: ${text}`]);
     const hint = `I am ${personaName}. I’ll guide you without revealing the answer. Think step by step and look for contradictions.`;
     setTimeout(() => setLog((L) => [...L, `agent: ${hint}`]), 400);
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       const u = new SpeechSynthesisUtterance(hint);
-      u.rate = 1.0; u.pitch = 1.0; u.lang = 'en-US';
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      u.lang = "en-US";
       window.speechSynthesis.speak(u);
     }
   };
@@ -100,7 +107,9 @@ function useMockPersona(enabled: boolean, personaName: string) {
  * Live helpers (Akool/Agora)
  * ----------------------------- */
 function isJson(resp: Response) {
-  return (resp.headers.get('content-type') || '').toLowerCase().includes('application/json');
+  return (resp.headers.get("content-type") || "")
+    .toLowerCase()
+    .includes("application/json");
 }
 
 async function createAkoolSession(
@@ -109,8 +118,11 @@ async function createAkoolSession(
   body: Record<string, unknown>
 ): Promise<{ sessionId: string; creds: Credentials }> {
   const resp = await fetch(`${host}/api/open/v4/liveAvatar/session/create`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(body),
   });
 
@@ -119,19 +131,27 @@ async function createAkoolSession(
     throw new Error(`Unexpected response ${resp.status}: ${txt.slice(0, 200)}`);
   }
   const json = await resp.json();
-  if (json.code !== 1000) throw new Error(json.msg || 'Akool session error');
+  if (json.code !== 1000) throw new Error(json.msg || "Akool session error");
 
   const data = json.data || {};
-  const creds: Credentials = data.credentials || data.stream_urls || data.agora || {};
-  return { sessionId: data._id ?? '', creds };
+  const creds: Credentials =
+    data.credentials || data.stream_urls || data.agora || {};
+  return { sessionId: data._id ?? "", creds };
 }
 
-async function closeAkoolSession(host: string, token: string, sessionId: string) {
+async function closeAkoolSession(
+  host: string,
+  token: string,
+  sessionId: string
+) {
   try {
     if (!sessionId) return;
     await fetch(`${host}/api/open/v4/liveAvatar/session/close`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ session_id: sessionId }),
     });
   } catch {
@@ -148,7 +168,7 @@ export function AkoolPersonaModal({
   persona,
   openapiHost,
   openapiToken,
-  sessionMinutes = 10,
+  sessionMinutes = 2,
 }: Props) {
   if (!open) return null;
 
@@ -166,10 +186,13 @@ export function AkoolPersonaModal({
   const [connected, setConnected] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string>('');
+  const [sessionId, setSessionId] = useState<string>("");
   const [reloadKey, setReloadKey] = useState(0);
   const localTracksRef = useRef<any[]>([]);
-  const avatarCandidates = [persona.avatarId, ...(persona.fallbackAvatarIds ?? [])].filter(Boolean) as string[];
+  const avatarCandidates = [
+    persona.avatarId,
+    ...(persona.fallbackAvatarIds ?? []),
+  ].filter(Boolean) as string[];
 
   useEffect(() => {
     if (!open || !client) return;
@@ -180,55 +203,75 @@ export function AkoolPersonaModal({
       setError(null);
 
       try {
-        const validCandidate = avatarCandidates.find(id => typeof id === 'string' && id.trim().length > 0);
-        if (!validCandidate) throw new Error('Persona missing avatarId.');
+        const validCandidate = avatarCandidates.find(
+          (id) => typeof id === "string" && id.trim().length > 0
+        );
+        if (!validCandidate) throw new Error("Persona missing avatarId.");
 
         let lastErr: unknown = null;
         let creds: Credentials | null = null;
-        let sid = '';
+        let sid = "";
 
         for (const avtr of avatarCandidates) {
           try {
-            const { sessionId, creds: c } = await createAkoolSession(openapiHost, openapiToken, {
-              avatar_id: avtr,
-              duration: sessionMinutes * 60,
-              ...(persona.voiceId ? { voice_id: persona.voiceId } : {}),
-              ...(persona.language ? { language: persona.language } : {}),
-              ...(persona.modeType != null ? { mode_type: persona.modeType } : {}),
-              ...(persona.backgroundUrl ? { background_url: persona.backgroundUrl } : {}),
-              ...(persona.voiceParams ? { voice_params: persona.voiceParams } : {}),
-            });
+            const { sessionId, creds: c } = await createAkoolSession(
+              openapiHost,
+              openapiToken,
+              {
+                avatar_id: avtr,
+                duration: sessionMinutes * 60,
+                ...(persona.voiceId ? { voice_id: persona.voiceId } : {}),
+                ...(persona.language ? { language: persona.language } : {}),
+                ...(persona.modeType != null
+                  ? { mode_type: persona.modeType }
+                  : {}),
+                ...(persona.backgroundUrl
+                  ? { background_url: persona.backgroundUrl }
+                  : {}),
+                ...(persona.voiceParams
+                  ? { voice_params: persona.voiceParams }
+                  : {}),
+              }
+            );
             sid = sessionId;
             creds = c;
             break;
           } catch (e: any) {
             lastErr = e;
-            const msg = String(e?.message || '');
-            if (/busy|lock_session|in use|Data directory not found/i.test(msg)) continue;
+            const msg = String(e?.message || "");
+            if (/busy|lock_session|in use|Data directory not found/i.test(msg))
+              continue;
             throw e;
           }
         }
 
         if (!creds) {
-          const msg = String((lastErr as any)?.message || 'All candidate avatars are busy/unavailable.');
+          const msg = String(
+            (lastErr as any)?.message ||
+              "All candidate avatars are busy/unavailable."
+          );
           throw new Error(msg);
         }
         if (cancelled) return;
 
         setSessionId(sid);
 
-        client.on('user-published', async (user: any, mediaType: 'video' | 'audio') => {
-          try {
-            const track = await client.subscribe(user, mediaType);
-            if (mediaType === 'video') track.play('akool-remote-video', { fit: 'contain' });
-            else track.play();
-          } catch (e) {
-            console.error('subscribe/play failed', e);
+        client.on(
+          "user-published",
+          async (user: any, mediaType: "video" | "audio") => {
+            try {
+              const track = await client.subscribe(user, mediaType);
+              if (mediaType === "video")
+                track.play("akool-remote-video", { fit: "contain" });
+              else track.play();
+            } catch (e) {
+              console.error("subscribe/play failed", e);
+            }
           }
-        });
+        );
 
-        client.on('connection-state-change', (_c: string, state: string) => {
-          setConnected(state === 'CONNECTED');
+        client.on("connection-state-change", (_c: string, state: string) => {
+          setConnected(state === "CONNECTED");
         });
 
         await client.join(
@@ -244,7 +287,7 @@ export function AkoolPersonaModal({
 
         await setAvatarParams(client as RTCClient, {
           vid: persona.voiceId,
-          lang: persona.language ?? 'en',
+          lang: persona.language ?? "en",
           mode: persona.modeType ?? 2,
           bgurl: persona.backgroundUrl,
           vparams: persona.voiceParams,
@@ -272,52 +315,79 @@ export function AkoolPersonaModal({
       localTracksRef.current = [];
       (async () => {
         for (const t of tracks) {
-          try { await client.unpublish(t); } catch {}
-          try { t.stop?.(); t.close?.(); } catch {}
+          try {
+            await client.unpublish(t);
+          } catch {}
+          try {
+            t.stop?.();
+            t.close?.();
+          } catch {}
         }
       })();
 
-      try { client.removeAllListeners?.(); } catch {}
-      (async () => { try { await client.leave?.(); } catch {} })();
+      try {
+        client.removeAllListeners?.();
+      } catch {}
+      (async () => {
+        try {
+          await client.leave?.();
+        } catch {}
+      })();
 
       if (sessionId) closeAkoolSession(openapiHost, openapiToken, sessionId);
 
       setMicEnabled(false);
       setJoined(false);
       setConnected(false);
-      setSessionId('');
+      setSessionId("");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, client, persona, openapiHost, openapiToken, sessionMinutes, reloadKey]);
+  }, [
+    open,
+    client,
+    persona,
+    openapiHost,
+    openapiToken,
+    sessionMinutes,
+    reloadKey,
+  ]);
 
   const toggleMic = async () => {
     if (!client) return;
     try {
       if (!micEnabled) {
-        if (typeof (client as any).setClientRole === 'function') {
-          await (client as any).setClientRole('host');
+        if (typeof (client as any).setClientRole === "function") {
+          await (client as any).setClientRole("host");
         }
-        const { default: AgoraRTC } = await import('agora-rtc-sdk-ng');
+        const { default: AgoraRTC } = await import("agora-rtc-sdk-ng");
         const mic = await AgoraRTC.createMicrophoneAudioTrack();
         await client.publish(mic);
         localTracksRef.current.push(mic);
         setMicEnabled(true);
       } else {
         const audio =
-          localTracksRef.current.find((t) => (t as any).trackMediaType === 'audio') ??
-          localTracksRef.current[0];
+          localTracksRef.current.find(
+            (t) => (t as any).trackMediaType === "audio"
+          ) ?? localTracksRef.current[0];
         if (audio) {
-          try { await client.unpublish(audio); } catch {}
-          try { audio.stop?.(); audio.close?.(); } catch {}
-          localTracksRef.current = localTracksRef.current.filter((t) => t !== audio);
+          try {
+            await client.unpublish(audio);
+          } catch {}
+          try {
+            audio.stop?.();
+            audio.close?.();
+          } catch {}
+          localTracksRef.current = localTracksRef.current.filter(
+            (t) => t !== audio
+          );
         }
-        if (typeof (client as any).setClientRole === 'function') {
-          await (client as any).setClientRole('audience');
+        if (typeof (client as any).setClientRole === "function") {
+          await (client as any).setClientRole("audience");
         }
         setMicEnabled(false);
       }
     } catch (e) {
-      console.error('mic toggle failed', e);
+      console.error("mic toggle failed", e);
     }
   };
 
@@ -325,18 +395,30 @@ export function AkoolPersonaModal({
     <PortalFrame open={open} onClose={onClose}>
       <div className="p-4">
         <div className="flex items-center justify-between mb-2 text-white font-mono">
-          <div>Chatting with: <b>{persona.name}</b> ({persona.building})</div>
+          <div>
+            Chatting with: <b>{persona.name}</b> ({persona.building})
+          </div>
           <div className="flex gap-2">
             {error && (
-              <button className="border border-white/30 px-2 py-1" onClick={() => setReloadKey((k) => k + 1)}>
+              <button
+                className="border border-white/30 px-2 py-1"
+                onClick={() => setReloadKey((k) => k + 1)}
+              >
                 Retry
               </button>
             )}
-            <button className="border border-white/30 px-2 py-1" onClick={onClose}>End</button>
+            <button
+              className="border border-white/30 px-2 py-1"
+              onClick={onClose}
+            >
+              End
+            </button>
           </div>
         </div>
 
-        {error && <div className="mb-3 text-red-400 font-mono text-sm">{error}</div>}
+        {error && (
+          <div className="mb-3 text-red-400 font-mono text-sm">{error}</div>
+        )}
 
         {!client ? (
           <div className="text-white font-mono">Loading voice chat…</div>
@@ -355,18 +437,25 @@ export function AkoolPersonaModal({
                 onClick={toggleMic}
                 disabled={!joined || joining}
                 className={[
-                  'relative w-36 h-36 rounded-full border-4 flex items-center justify-center select-none',
-                  'transition-all duration-150 ease-out',
+                  "relative w-36 h-36 rounded-full border-4 flex items-center justify-center select-none",
+                  "transition-all duration-150 ease-out",
                   !joined || joining
-                    ? 'opacity-60 cursor-not-allowed border-white/20 bg-neutral-800'
+                    ? "opacity-60 cursor-not-allowed border-white/20 bg-neutral-800"
                     : micEnabled
-                    ? 'bg-red-600/80 border-red-300 shadow-[0_0_0_8px_rgba(239,68,68,0.25)] animate-pulse'
-                    : 'bg-neutral-800 border-white/20 hover:bg-neutral-700'
-                ].join(' ')}
-                title={micEnabled ? 'Mute mic' : (joined ? 'Enable mic' : 'Joining…')}
+                    ? "bg-red-600/80 border-red-300 shadow-[0_0_0_8px_rgba(239,68,68,0.25)] animate-pulse"
+                    : "bg-neutral-800 border-white/20 hover:bg-neutral-700",
+                ].join(" ")}
+                title={
+                  micEnabled ? "Mute mic" : joined ? "Enable mic" : "Joining…"
+                }
               >
                 {/* Mic icon */}
-                <svg viewBox="0 0 24 24" className="w-14 h-14 text-white" fill="currentColor" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="w-14 h-14 text-white"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
                   <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"></path>
                   <path d="M19 11a1 1 0 1 1 2 0 9 9 0 0 1-8 8v3h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-3a9 9 0 0 1-8-8 1 1 0 1 1 2 0 7 7 0 1 0 14 0z"></path>
                 </svg>
@@ -374,10 +463,16 @@ export function AkoolPersonaModal({
 
               <div className="text-white/80 font-mono text-sm">
                 {joined
-                  ? (connected
-                      ? (micEnabled ? 'Listening… tap to mute' : 'Tap to talk')
-                      : 'Joining…')
-                  : (joining ? 'Starting…' : (error ? 'Error' : 'Idle'))}
+                  ? connected
+                    ? micEnabled
+                      ? "Listening… tap to mute"
+                      : "Tap to talk"
+                    : "Joining…"
+                  : joining
+                  ? "Starting…"
+                  : error
+                  ? "Error"
+                  : "Idle"}
               </div>
 
               <div className="text-white/50 font-mono text-xs text-center">
@@ -394,14 +489,27 @@ export function AkoolPersonaModal({
 /* -----------------------------
  * Mock-only panel (same UI)
  * ----------------------------- */
-function MockPanel({ onClose, persona }: { onClose: () => void; persona: Persona }) {
-  const { joined, connected, micEnabled, setMicEnabled } = useMockPersona(true, persona.name);
+function MockPanel({
+  onClose,
+  persona,
+}: {
+  onClose: () => void;
+  persona: Persona;
+}) {
+  const { joined, connected, micEnabled, setMicEnabled } = useMockPersona(
+    true,
+    persona.name
+  );
 
   return (
     <div className="p-4">
       <div className="flex items-center justify-between mb-2 text-white font-mono">
-        <div>Chatting with: <b>{persona.name}</b> ({persona.building}) — MOCK</div>
-        <button className="border border-white/30 px-2 py-1" onClick={onClose}>End</button>
+        <div>
+          Chatting with: <b>{persona.name}</b> ({persona.building}) — MOCK
+        </div>
+        <button className="border border-white/30 px-2 py-1" onClick={onClose}>
+          End
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -422,22 +530,33 @@ function MockPanel({ onClose, persona }: { onClose: () => void; persona: Persona
             aria-pressed={micEnabled}
             onClick={() => setMicEnabled((m) => !m)}
             className={[
-              'relative w-36 h-36 rounded-full border-4 flex items-center justify-center select-none',
-              'transition-all duration-150 ease-out',
+              "relative w-36 h-36 rounded-full border-4 flex items-center justify-center select-none",
+              "transition-all duration-150 ease-out",
               micEnabled
-                ? 'bg-red-600/80 border-red-300 shadow-[0_0_0_8px_rgba(239,68,68,0.25)] animate-pulse'
-                : 'bg-neutral-800 border-white/20 hover:bg-neutral-700'
-            ].join(' ')}
-            title={micEnabled ? 'Mute mic' : 'Enable mic'}
+                ? "bg-red-600/80 border-red-300 shadow-[0_0_0_8px_rgba(239,68,68,0.25)] animate-pulse"
+                : "bg-neutral-800 border-white/20 hover:bg-neutral-700",
+            ].join(" ")}
+            title={micEnabled ? "Mute mic" : "Enable mic"}
           >
-            <svg viewBox="0 0 24 24" className="w-14 h-14 text-white" fill="currentColor" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              className="w-14 h-14 text-white"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3z"></path>
               <path d="M19 11a1 1 0 1 1 2 0 9 9 0 0 1-8 8v3h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-3a9 9 0 0 1-8-8 1 1 0 1 1 2 0 7 7 0 1 0 14 0z"></path>
             </svg>
           </button>
 
           <div className="text-white/80 font-mono text-sm">
-            {joined ? (connected ? (micEnabled ? 'Listening… tap to mute' : 'Tap to talk') : 'Joining…') : 'Starting…'}
+            {joined
+              ? connected
+                ? micEnabled
+                  ? "Listening… tap to mute"
+                  : "Tap to talk"
+                : "Joining…"
+              : "Starting…"}
           </div>
 
           <div className="text-white/50 font-mono text-xs text-center">

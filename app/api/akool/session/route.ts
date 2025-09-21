@@ -70,7 +70,7 @@ export async function POST(req: Request) {
         ...(modeType ? { mode_type: modeType } : {}),
         ...(backgroundUrl ? { background_url: backgroundUrl } : {}),
         ...(voiceParams ? { voice_params: voiceParams } : {}),
-        ...(knowledgeID ? { knowledge_id: knowledgeID } : {}),
+        // ...(knowledgeID ? { knowledge_id: knowledgeID } : {}),
       }),
     });
 
